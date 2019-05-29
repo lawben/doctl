@@ -14,6 +14,7 @@ limitations under the License.
 package ssh
 
 import (
+	"fmt"
 	"os"
 	"os/exec"
 	"strconv"
@@ -23,6 +24,10 @@ func runExternalSSH(r *Runner) error {
 	args := []string{}
 	if r.KeyPath != "" {
 		args = append(args, "-i", r.KeyPath)
+	}
+
+	if r.KnownHostsPath != "" {
+		args = append(args, "-o", fmt.Sprintf("UserKnownHostsFile=%s", r.KnownHostsPath))
 	}
 
 	sshHost := r.Host

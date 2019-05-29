@@ -27,6 +27,7 @@ type Runner struct {
 	User            string
 	Host            string
 	KeyPath         string
+	KnownHostsPath  string
 	Port            int
 	AgentForwarding bool
 	Command         string

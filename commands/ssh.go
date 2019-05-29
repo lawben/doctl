@@ -35,12 +35,14 @@ func SSH(parent *Command) *Command {
 	usr, err := user.Current()
 	checkErr(err)
 
-	path := filepath.Join(usr.HomeDir, ".ssh", "id_rsa")
+	keyPath := filepath.Join(usr.HomeDir, ".ssh", "id_rsa")
+	knownHostsPath := filepath.Join(usr.HomeDir, ".ssh", "known_hosts")
 
 	cmdSSH := CmdBuilder(parent, RunSSH, "ssh <droplet-id|host>", "ssh to droplet", Writer,
 		docCategories("droplet"))
 	AddStringFlag(cmdSSH, doctl.ArgSSHUser, "", "root", "ssh user")
-	AddStringFlag(cmdSSH, doctl.ArgsSSHKeyPath, "", path, "path to private ssh key")
+	AddStringFlag(cmdSSH, doctl.ArgsSSHKeyPath, "", keyPath, "path to private ssh key")
+	AddStringFlag(cmdSSH, doctl.ArgsSSHKnownHostsPath, "", knownHostsPath, "path to known hosts file")
 	AddIntFlag(cmdSSH, doctl.ArgsSSHPort, "", 22, "port sshd is running on")
 	AddBoolFlag(cmdSSH, doctl.ArgsSSHAgentForwarding, "", false, "enable ssh agent forwarding")
 	AddBoolFlag(cmdSSH, doctl.ArgsSSHPrivateIP, "", false, "ssh to private ip instead of public ip")
@@ -67,6 +69,11 @@ func RunSSH(c *CmdConfig) error {
 	}
 
 	keyPath, err := c.Doit.GetString(c.NS, doctl.ArgsSSHKeyPath)
+	if err != nil {
+		return err
+	}
+
+	knownHostsPath, err := c.Doit.GetString(c.NS, doctl.ArgsSSHKnownHostsPath)
 	if err != nil {
 		return err
 	}
@@ -151,7 +158,7 @@ func RunSSH(c *CmdConfig) error {
 		return errors.New("could not find droplet address")
 	}
 
-	runner := c.Doit.SSH(user, ip, keyPath, port, opts)
+	runner := c.Doit.SSH(user, ip, keyPath, knownHostsPath, port, opts)
 	return runner.Run()
 }
 

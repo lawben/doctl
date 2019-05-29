@@ -114,6 +114,8 @@ const (
 	ArgSizeSlug = "size"
 	// ArgsSSHKeyPath is a ssh argument.
 	ArgsSSHKeyPath = "ssh-key-path"
+	// ArgsSSHKnownHostsPath is a ssh argument.
+	ArgsSSHKnownHostsPath = "ssh-known-hosts-path"
 	// ArgSSHKeys is a ssh key argument.
 	ArgSSHKeys = "ssh-keys"
 	// ArgsSSHPort is a ssh argument.
