@@ -84,7 +84,7 @@ func TestSSH_CustomPort(t *testing.T) {
 		rm.On("Run").Return(nil)
 
 		tc := config.Doit.(*TestConfig)
-		tc.SSHFn = func(user, host, keyPath string, port int, opts ssh.Options) runner.Runner {
+		tc.SSHFn = func(user, host, keyPath string, knownHostsPath string, port int, opts ssh.Options) runner.Runner {
 			assert.Equal(t, 2222, port)
 			return rm
 		}
@@ -105,7 +105,7 @@ func TestSSH_CustomUser(t *testing.T) {
 		rm.On("Run").Return(nil)
 
 		tc := config.Doit.(*TestConfig)
-		tc.SSHFn = func(user, host, keyPath string, port int, opts ssh.Options) runner.Runner {
+		tc.SSHFn = func(user, host, keyPath string, knownHostsPath string, port int, opts ssh.Options) runner.Runner {
 			assert.Equal(t, "foobar", user)
 			return rm
 		}
@@ -126,7 +126,7 @@ func TestSSH_AgentForwarding(t *testing.T) {
 		rm.On("Run").Return(nil)
 
 		tc := config.Doit.(*TestConfig)
-		tc.SSHFn = func(user, host, keyPath string, port int, opts ssh.Options) runner.Runner {
+		tc.SSHFn = func(user, host, keyPath string, knownHostsPath string, port int, opts ssh.Options) runner.Runner {
 			assert.Equal(t, true, opts[doctl.ArgsSSHAgentForwarding])
 			return rm
 		}
@@ -147,13 +147,34 @@ func TestSSH_CommandExecuting(t *testing.T) {
 		rm.On("Run").Return(nil)
 
 		tc := config.Doit.(*TestConfig)
-		tc.SSHFn = func(user, host, keyPath string, port int, opts ssh.Options) runner.Runner {
+		tc.SSHFn = func(user, host, keyPath string, knownHostsPath string, port int, opts ssh.Options) runner.Runner {
 			assert.Equal(t, "uptime", opts[doctl.ArgSSHCommand])
 			return rm
 		}
 
 		tm.droplets.On("List").Return(testDropletList, nil)
 		config.Doit.Set(config.NS, doctl.ArgSSHCommand, "uptime")
+		config.Args = append(config.Args, testDroplet.Name)
+
+		err := RunSSH(config)
+		assert.NoError(t, err)
+	})
+}
+
+func TestSSH_KnownHosts(t *testing.T) {
+	withTestClient(t, func(config *CmdConfig, tm *tcMocks) {
+		rm := &mocks.Runner{}
+		rm.On("Run").Return(nil)
+
+		tc := config.Doit.(*TestConfig)
+		tc.SSHFn = func(user, host, keyPath string, knownHostsPath string, port int, opts ssh.Options) runner.Runner {
+			assert.Equal(t, "/tmp/known_hosts", knownHostsPath)
+			return rm
+		}
+
+		tm.droplets.On("List").Return(testDropletList, nil)
+
+		config.Doit.Set(config.NS, doctl.ArgsSSHKnownHostsPath, "/tmp/known_hosts")
 		config.Args = append(config.Args, testDroplet.Name)
 
 		err := RunSSH(config)

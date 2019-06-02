@@ -247,7 +247,7 @@ func withTestClient(t *testing.T, tFn testFn) {
 }
 
 type TestConfig struct {
-	SSHFn    func(user, host, keyPath string, port int, opts ssh.Options) runner.Runner
+	SSHFn    func(user, host, keyPath string, knownHostsPath string, port int, opts ssh.Options) runner.Runner
 	v        *viper.Viper
 	IsSetMap map[string]bool
 }
@@ -256,7 +256,7 @@ var _ doctl.Config = &TestConfig{}
 
 func NewTestConfig() *TestConfig {
 	return &TestConfig{
-		SSHFn: func(u, h, kp string, p int, opts ssh.Options) runner.Runner {
+		SSHFn: func(u, h, kp string, khp string, p int, opts ssh.Options) runner.Runner {
 			return &doctl.MockRunner{}
 		},
 		v:        viper.New(),
@@ -270,8 +270,8 @@ func (c *TestConfig) GetGodoClient(trace bool, accessToken string) (*godo.Client
 	return &godo.Client{}, nil
 }
 
-func (c *TestConfig) SSH(user, host, keyPath string, port int, opts ssh.Options) runner.Runner {
-	return c.SSHFn(user, host, keyPath, port, opts)
+func (c *TestConfig) SSH(user, host, keyPath string, knownHostsPath string, port int, opts ssh.Options) runner.Runner {
+	return c.SSHFn(user, host, keyPath, knownHostsPath, port, opts)
 }
 
 func (c *TestConfig) Set(ns, key string, val interface{}) {
